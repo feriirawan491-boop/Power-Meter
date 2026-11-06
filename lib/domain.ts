@@ -1,0 +1,18 @@
+import {z} from 'zod';
+import {currentHistory} from './measurements';
+export const roles=['Supervisor','Operator','Akunting','Admin'] as const;
+export type Role=typeof roles[number];
+export function canAccess(role:Role,view:string){if(role==='Supervisor'||role==='Admin')return true;if(role==='Operator')return !['Energi & Biaya','Laporan','Pengaturan'].includes(view);return ['Energi & Biaya','Laporan'].includes(view)}
+export function freshness(age:number){return age<=30?'Terkini':age<=120?'Terlambat':'Terputus'}
+export function consumption(start:number|null,end:number|null){if(start===null||end===null||end<start)return {value:null,quality:'PERLU_REKONSILIASI' as const};return {value:Number((end-start).toFixed(4)),quality:'LENGKAP' as const}}
+const scale=10000n;
+function decimal(value:string){if(!/^\d+(\.\d{1,4})?$/.test(value))throw new Error('Angka desimal tidak valid (maksimal 4 desimal).');const [whole,fraction='']=value.split('.');return BigInt(whole)*scale+BigInt(fraction.padEnd(4,'0'))}
+export function cost(lines:readonly {kwh:string;rate:string|null}[]):string|null{if(lines.some(l=>l.rate===null))return null;const denominator=scale*scale;const total=lines.reduce((sum,l)=>sum+decimal(l.kwh)*decimal(l.rate??'0'),0n);return ((total+denominator/2n)/denominator).toString()}
+export function periodBoundary(samples:readonly {at:number;value:number}[],target:number){const s=[...samples].filter(x=>x.at<=target&&target-x.at<=30000).sort((a,b)=>b.at-a.at)[0];return s?{value:s.value,actual:s.at,quality:s.at===target?'LENGKAP':'ESTIMASI'}:{value:null,actual:null,quality:'PERLU_REKONSILIASI'}}
+export function evaluateRule(samples:readonly {at:number;value:number}[],rule:{threshold:number;seconds:number;maxGap:number}){let first:number|null=null;let last:number|null=null;for(const s of samples){if(s.value<=rule.threshold){first=null;last=s.at;continue}if(first===null||(last!==null&&s.at-last>rule.maxGap))first=s.at;last=s.at;if(s.at-first>=rule.seconds)return s.at}return null}
+export interface HistorySample{at:string;kw:number|null;voltage:number|null;current:number|null;counter:number|null}
+export function makeHistory(id:string,tick?:number):HistorySample[]{return currentHistory(id,tick).map(f=>({at:f.at,kw:Number(f.kw.toFixed(3)),voltage:Number(f.vavg.toFixed(2)),current:Number(f.iavg.toFixed(2)),counter:Number(f.counter.toFixed(4))}))}
+export function timeWib(iso:string){return new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date(iso))}
+export const tariffSchema=z.object({accounting:z.string().max(12,'Tarif terlalu besar.').regex(/^\d+(\.\d{1,4})?$/,'Gunakan angka ≥0, titik untuk desimal, maksimal 4 desimal.'),lwbp:z.string().max(12,'Tarif terlalu besar.').regex(/^\d+(\.\d{1,4})?$/,'Tarif tidak valid.'),wbp:z.string().max(12,'Tarif terlalu besar.').regex(/^\d+(\.\d{1,4})?$/,'Tarif tidak valid.'),effectiveFrom:z.string().regex(/^\d{4}-\d{2}-\d{2}$/,'Tanggal wajib.'),reason:z.string().trim().min(10,'Alasan minimal 10 karakter.').max(1000)});
+export const ruleSchema=z.object({threshold:z.number().finite().positive('Batas harus positif.'),seconds:z.number().int().min(0).max(600),hysteresis:z.number().finite().nonnegative(),reason:z.string().trim().min(10,'Alasan minimal 10 karakter.').max(1000)}).refine(v=>v.hysteresis<v.threshold,{path:['hysteresis'],message:'Hysteresis harus lebih kecil dari batas.'});
+export const noteSchema=z.object({note:z.string().trim().min(1,'Catatan wajib diisi.').max(2000,'Maksimal 2.000 karakter.')});
