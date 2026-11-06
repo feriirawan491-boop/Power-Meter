@@ -1,0 +1,22 @@
+// Audit regression scenarios. Recovery requires a complete normal-sample duration.
+import {it,expect,beforeEach,afterEach,vi} from 'vitest';
+import {renderHook,act,cleanup} from '@testing-library/react';
+import {resetSimulation,setVoltageOverride,setConnection,nextSimulation,simulationSnapshot} from '../lib/simulation';
+import {useDemo,acknowledge,saveRule,resetDemoForTests} from '../lib/demo-store';
+import {automaticAlarms} from '../lib/automatic-alarms';
+import {frameAt,currentHistory} from '../lib/measurements';
+import {buildEnergyReport} from '../lib/energy-reports';
+import {counterAt} from '../lib/telemetry';
+const tariff={version:1,accounting:'1000',lwbp:'1000',wbp:'1500'};
+beforeEach(()=>{cleanup();vi.useFakeTimers();vi.setSystemTime(new Date('2026-11-06T08:10:00Z'));resetSimulation();resetDemoForTests();saveRule({threshold:415,seconds:20,hysteresis:5},'Reset isolated audit scenario','Admin')});
+afterEach(()=>{cleanup();vi.useRealTimers()});
+it('A-01 retains an active alarm when its meter disconnects',()=>{const h=renderHook(useDemo);act(()=>setVoltageOverride(430,10));const event=h.result.current.events.find(e=>e.id.startsWith('AUTO-PM-002')&&!e.recovered);expect(event).toBeDefined();act(()=>setConnection('PM-002',480));expect(h.result.current.events.some(e=>e.id===event?.id&&!e.recovered)).toBe(true)});
+it('A-02 keeps the event ID stable beyond the rolling scan window',()=>{const h=renderHook(useDemo);act(()=>setVoltageOverride(430,250));const first=h.result.current.events.find(e=>e.id.startsWith('AUTO-PM-002')&&!e.recovered);expect(first).toBeDefined();act(nextSimulation);const next=h.result.current.events.find(e=>e.id.startsWith('AUTO-PM-002')&&!e.recovered);expect(next?.id).toBe(first?.id)});
+it('A-03 does not discard acknowledged historical events after rule changes',()=>{const h=renderHook(useDemo);act(()=>setVoltageOverride(430,10));const event=h.result.current.events.find(e=>e.id.startsWith('AUTO-PM-002')&&!e.recovered)!;act(()=>acknowledge(event.id,'Supervisor'));act(()=>saveRule({threshold:500,seconds:20,hysteresis:5},'Audit rule version change','Admin'));expect(h.result.current.events.some(e=>e.id===event.id&&e.ack?.by==='Supervisor')).toBe(true)});
+it('A-04 persists recovered automatic alarms without requiring manual acknowledgment',()=>{const h=renderHook(useDemo);act(()=>setVoltageOverride(430,10));const event=h.result.current.events.find(e=>e.id.startsWith('AUTO-PM-002')&&!e.recovered)!;act(()=>setVoltageOverride(396,2));expect(h.result.current.events.find(e=>e.id===event.id)?.recovered).toBeTruthy();act(()=>setConnection('PM-002',480));expect(h.result.current.events.find(e=>e.id===event.id)?.recovered).toBeTruthy()});
+it('A-05 current-month closing counter agrees with the machine sample',()=>{const tick=simulationSnapshot().tick;const f=frameAt('PM-001',tick);const r=buildEnergyReport('2026-11','PM-001','monthly',tariff,tick);expect(r.rows[0][2]).toBe(Number(f.counter.toFixed(4)))});
+it('A-06 adjacent calendar boundaries do not reset counter',()=>{const oct=buildEnergyReport('2026-10','PM-001','monthly',tariff),nov=buildEnergyReport('2026-11','PM-001','monthly',tariff);expect(oct.rows[0][2]).toBe(nov.rows[0][1])});
+it('A-07 offline current-period consumption is missing, not zero',()=>{act(()=>setConnection('PM-001',480));const r=buildEnergyReport('2026-11','PM-001','monthly',tariff);expect(r.rows[0][3]).toBeNull()});
+it('A-08 replay cannot rewrite a reading already present in the same timestamp',()=>{const tick=simulationSnapshot().tick;act(()=>setVoltageOverride(430,3));const sample=frameAt('PM-002',tick);act(()=>setVoltageOverride(396,2));expect(frameAt('PM-002',tick).v12).toBe(sample.v12)});
+it('A-09 records the live history capacity limitation',()=>{expect(currentHistory('PM-001').length).toBeLessThanOrEqual(36);expect(counterAt('PM-001',Date.parse('2026-11-01T00:00:00+07:00'))).toBeGreaterThan(0)});
+it('A-10 supports under-voltage as an abnormal condition',()=>{const h=renderHook(useDemo);act(()=>setVoltageOverride(180,10));const events=automaticAlarms(h.result.current);expect(events.some(e=>e.meterId==='PM-002'&&e.parameter.toLowerCase().includes('under'))).toBe(true)});

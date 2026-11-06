@@ -1,0 +1,15 @@
+{
+  "lib/automatic-alarms.ts": "bf55c13ce49ede6b231ece2e2ea8838c0ba0cf6486409068868ef7bdb272f0ef",
+  "lib/demo-store.ts": "74a803f0ef1ec83fe3319fbbf1d8a5c0b091ed3142301deabdbc58e396e2a416",
+  "lib/simulation.ts": "743fff784b1977221c47528c468a4468421a68859718e84cf8b541fc08ccbcfa",
+  "lib/energy-reports.ts": "5f9fc2b53b1d3f835799eb0f04809efa3a59ecdd353aab416afbc0e79994b13f",
+  "lib/measurements.ts": "19b035777efca82777b1fbcb277117db04310c6b1db6ebff510c2b0623d86c48",
+  "lib/telemetry.ts": "0e00c33e5d770666bf02540bb148e07a822e7ef41b361650b825bb36d1b2c077",
+  "components/modules/energy.tsx": "4369eb9c66e4fc7957ce24431dd33082607a223b7eadcb866cce1fd4bf660a0e",
+  "components/modules/shared.tsx": "dfc950b7c7a37b54a0ffa7f9bf2c491dad70298ff2ac8d2df1bd439e357dca2d",
+  "components/modules/cost-gap.tsx": "5d3befe3adfccf581aa18dd7467915529dd2384ff9e26b0e63ef5346c383b004",
+  "components/modules/reports.tsx": "396542dbc5c1cce4d23eeeeee7d907ddbdbbcf8becfbda7e52d482002c68a7c4",
+  "lib/demo-auth.ts": "93ff9b87e1a7c07ceb34588defb35a106b2f7baa334dd755f17a2b7ccb2f79c9",
+  "proxy.ts": "20062e67d4a7a227b0ac8b0eded9da469651a15ae36092a0d73665529cf5f169",
+  "package-lock.json": "ebdd6a9265aa3e3d881e5bd511975b071025e7a8eb6321e4d9fb31625a018102"
+}

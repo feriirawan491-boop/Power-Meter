@@ -99,3 +99,7 @@ Verifikasi setelah pembaruan dummy: lint, typecheck dan production build berhasi
 - Tab mobile tersusun dua baris tanpa menyembunyikan pilihan Rekap; pemeriksaan browser tidak menemukan overflow body pada 375 px.
 - Mode statis dashboard kelistrikan sebelumnya tidak diubah oleh perbaikan ini.
 - 59 test lulus, termasuk empat skenario UX energi baru; lint/build berhasil. Test axe tetap tidak memvalidasi kontras visual jsdom. Uji pengguna client belum dilakukan.
+
+## Perbaikan audit — 6 November 2026
+
+Cacat F-01–F-05 diperbaiki pada sandbox: retensi dan ID alarm, versi rule lama, replay append-only, dan target cetak per laporan. Tambahan: replay Under Voltage/Overload/Low PF, durasi pulih dan no-data, serta snapshot nilai rekap terbit dengan provenance dan konfigurasi. Validasi: 97 test (termasuk 11 diagnostik audit), lint, typecheck dan build. Detail dan batas yang masih tersisa ada di `audit/PERBAIKAN-AUDIT-2026-11-06.md`. Status tetap sandbox dummy; bukan siap produksi.

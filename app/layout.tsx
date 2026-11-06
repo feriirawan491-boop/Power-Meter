@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "Sandbox monitoring energi Sakuratex — Phase 0–7.",
   robots: { index: false, follow: false },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: [{url: "/icon-sakuratex.png", type: "image/png", sizes: "200x200"}],
+    shortcut: "/icon-sakuratex.png",
   },
 };
 
@@ -21,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className="antialiased">{children}</body>
+      {/* Browser extensions may add body attributes before React hydrates. */}
+      <body className="antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

@@ -157,3 +157,6 @@ select:disabled{opacity:.55;cursor:not-allowed}
 
 /* Desktop login: illustration on the left, sign-in form on the right. */
 @media(min-width:851px){.login-page{grid-template-columns:minmax(0,1.1fr) minmax(440px,.9fr)}.login-hero{grid-column:1;grid-row:1;margin:16px 0 16px 16px}.login-panel{grid-column:2;grid-row:1}}
+
+.selected-print-target{display:none}
+@media print{body[data-report-print]>:not(.selected-print-target){display:none!important}.selected-print-target{display:block!important}.selected-print-target .report-print{position:static!important;visibility:visible!important}.selected-print-target .report-print *{visibility:visible!important}}
