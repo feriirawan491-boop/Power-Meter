@@ -46,4 +46,4 @@ Skenario awal menyediakan data dummy online untuk seluruh 5 mesin, termasuk Dyei
 
 Buka `/login`. Akun: `demo@sakuratex.id`, kata sandi: `demo123`. Kredensial diverifikasi pada route server; halaman dashboard memerlukan cookie sesi HttpOnly yang berlaku 8 jam. Tombol keluar menghapus sesi. Pemilih peran tetap simulasi persona.
 
-`DEMO_SESSION_SECRET` harus ditetapkan dengan nilai acak yang kuat pada `.env.local` atau pengaturan environment hosting sebelum menjalankan aplikasi. Untuk hosting, tambahkan variabel ini di dashboard provider lalu redeploy; jangan commit nilai secret ke Git. Ilustrasi hero memakai gambar pabrik tekstil yang diberikan pengguna.
+Login demo otomatis menyiapkan kunci sesi acak di sisi server saat `npm ci`/build. Tidak perlu mengisi environment untuk menjalankan demo. File `.generated/` diabaikan Git dan tidak masuk aset browser. `DEMO_SESSION_SECRET` tetap dapat diisi untuk memakai kunci yang stabil antar deployment; jangan commit nilai secret ke Git. Ilustrasi hero memakai gambar pabrik tekstil yang diberikan pengguna.

@@ -9,7 +9,10 @@
     "start": "next start --hostname 127.0.0.1 --port 5173",
     "lint": "eslint app components constants lib tests vitest.config.ts proxy.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node scripts/prepare-demo-session.mjs",
+    "predev": "node scripts/prepare-demo-session.mjs",
+    "prebuild": "node scripts/prepare-demo-session.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
