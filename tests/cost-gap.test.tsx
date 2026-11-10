@@ -2,7 +2,7 @@ import {beforeEach,it,expect} from 'vitest';
 import {render,screen,act,within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {CostGap} from '../components/modules/cost-gap';
-import {calculateCostGap,buildCostGapReport} from '../lib/cost-gap';
+import {calculateCostGap,buildCostGapReport,costGapDetails} from '../lib/cost-gap';
 import {resetPlnBill} from '../lib/demo-store';
 import {simulationSnapshot,nextSimulation,setConnection} from '../lib/simulation';
 const tariff={version:1,accounting:'1000',lwbp:'1000',wbp:'1500'};
@@ -14,6 +14,32 @@ it('calculates a signed rupiah difference and uses the bill as percentage denomi
  expect(result.gap).toBe(1000000);expect(result.percent).toBeCloseTo(1000000/Number(bill.amount)*100,8);
  expect(calculateCostGap('2026-10',tariff,{...bill,amount:String(machine-1000000)}).gap).toBe(-1000000);
  expect(calculateCostGap('2026-10',tariff,{...bill,amount:'0'}).percent).toBeNull();
+});
+it('reconciles PLN components, total, and machine difference with the exported details',()=>{
+ const rates={...tariff,plnLwbp:'1111.1234',plnWbp:'1666.5678'};
+ const g=calculateCostGap('2026-10',rates),details=costGapDetails(g,rates);
+ expect(g.lwbpCost+g.wbpCost+g.energyRounding).toBe(g.base);
+ expect(g.additionalCost).toBe(Math.round((g.base+2500000)*.03));
+ expect(g.base+g.fixedCost+g.additionalCost).toBe(g.plnBill);
+ expect(g.plnBill-g.machineCost!).toBe(g.gap);
+ expect(details.rows.find(row=>row[0]==='Total PLN pembanding')?.[2]).toBe(g.plnBill);
+ const report=buildCostGapReport('2026-10',rates);
+ expect(report.metadata.some(([label])=>label==='Biaya LWBP')).toBe(true);
+ expect(report.metadata.some(([label])=>label==='Total PLN pembanding')).toBe(true);
+ render(<CostGap month="2026-10" tariff={rates} selectedMeter="all"/>);
+ const internal=screen.getByRole('region',{name:'Perhitungan Internal'});
+ const pln=screen.getByRole('region',{name:'Perhitungan PLN'});
+ expect(within(internal).getByText('Total Internal')).toBeVisible();
+ expect(within(pln).getByText('Total PLN')).toBeVisible();
+ expect(within(pln).getByText('Biaya listrik (LWBP + WBP)')).toBeVisible();
+ expect(screen.queryByRole('table')).not.toBeInTheDocument();
+});
+it('does not invent a component breakdown for a manually entered PLN total',()=>{
+ const bill={month:'2026-10',amount:'900000000',tick:simulationSnapshot().tick,at:new Date().toISOString()};
+ const details=costGapDetails(calculateCostGap('2026-10',tariff,bill),tariff);
+ expect(details.rows.find(row=>row[0]==='Total PLN pembanding')?.[2]).toBe(900000000);
+ expect(details.rows.some(row=>row[0]==='Biaya LWBP')).toBe(false);
+ expect(details.metadata[0][1]).toContain('tidak tersedia');
 });
 it('blocks the comparison when any current-period machine counter is missing',()=>{
  act(()=>setConnection('PM-004',480));const result=calculateCostGap('2026-11',tariff);expect(result.available).toBe(4);expect(result.machineCost).toBeNull();expect(result.gap).toBeNull();expect(result.availableCost).toBeGreaterThan(0);

@@ -24,6 +24,10 @@ Jalankan typecheck setelah build selesai, bukan bersamaan saat Next mengubah gen
 
 Baca [panduan review](REVIEW-GUIDE.md) dan [status implementasi / penghalang go-live](IMPLEMENTATION-STATUS.md).
 
+Untuk serah terima pengembangan, gunakan [dokumen handoff](HANDOFF.md), yang
+merangkum arsitektur, alur data, validasi terakhir, checklist penerimaan, dan
+prioritas integrasi produksi setelah audit 10 November 2026.
+
 ## Modul
 
 Monitoring/detail/histori, dua dashboard biaya, rekap bulanan, alarm/ack/catatan/replay, export CSV/XLSX/cetak, settings versi tarif/rule, peran UI dan audit lokal.

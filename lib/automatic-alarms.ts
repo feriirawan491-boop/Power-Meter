@@ -2,6 +2,7 @@ import {meters} from './data';
 import {frameAt} from './measurements';
 import {simulationSnapshot,SIMULATION_EPOCH} from './simulation';
 import type {DemoState,DemoEvent} from './demo-store';
+import {meterReading} from './reading-state';
 export type AlarmKind='over_voltage'|'under_voltage'|'overload'|'low_pf';
 export interface AlarmCondition{kind:AlarmKind;key:'v12'|'i1'|'pf';label:string;limit:number;recovery:number;below:boolean;unit:string}
 export function alarmConditions(rule:DemoState['rule']):AlarmCondition[]{return [
@@ -15,7 +16,7 @@ const tickAt=(iso:string)=>Math.round((Date.parse(iso)-SIMULATION_EPOCH)/10000);
 export function automaticAlarms(state:DemoState):DemoEvent[]{
  const sim=simulationSnapshot();const journal=new Map(state.events.map(e=>[e.id,e]));
  for(const meter of meters){
-  const age=sim.ages[meter.id]??(meter.connected?10:480);
+  const {age}=meterReading(meter.id,sim.tick,sim);
   const active=[...journal.values()].filter(e=>(e.id.startsWith('AUTO-')||e.parameterKey!==undefined)&&e.meterId===meter.id&&!e.recovered);
   // Missing data never deletes or recovers a known event.
   for(const e of active){

@@ -2,6 +2,11 @@
 
 Versi: 0.7.0 · 6 November 2026 · Target: review lokal frontend, bukan go-live pabrik.
 
+Pembaruan 10 November 2026: lihat [audit integrasi data](audit/AUDIT-INTEGRASI-DATA-2026-11-10.md)
+untuk alur data dan hasil validasi terbaru. Catatan fase di bawah adalah riwayat
+implementasi; perubahan setelahnya dijelaskan dalam audit tersebut. Status tetap
+simulasi lokal, belum terhubung ke perangkat atau database produksi.
+
 ## Login demo
 
 Halaman `/login` menggunakan akun `demo@sakuratex.id` / `demo123`, pemeriksaan server dan sesi cookie HttpOnly 8 jam. Dashboard dilindungi Proxy; logout menghapus sesi. Ini akses demo bersama, bukan otorisasi per pengguna/area produksi.
