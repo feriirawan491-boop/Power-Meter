@@ -4,7 +4,7 @@ import {counterAt,dummyFrame} from './telemetry';
 import {cost,timeWib} from './domain';
 import {simulationSnapshot} from './simulation';
 import type {Report} from './reports';
-export interface GapTariff{version:number;accounting:string;lwbp:string;wbp:string}
+export interface GapTariff{version:number;accounting:string;lwbp:string;wbp:string;plnLwbp?:string;plnWbp?:string}
 export interface PlnBill{month:string;amount:string;tick:number;at:string}
 export function calculateCostGap(month:string,tariff:GapTariff,bill?:PlnBill,tick=simulationSnapshot().tick){
  const cutoffTick=bill?.tick??tick;
@@ -20,7 +20,7 @@ export function calculateCostGap(month:string,tariff:GapTariff,bill?:PlnBill,tic
  const modelKwh=meters.reduce((sum,m)=>sum+counterAt(m.id,endAt)-counterAt(m.id,startAt),0);
  // Separate dummy bill scenario, explicitly including extra load and illustrative charges.
  const plnEnergy=modelKwh*1.04;
- const base=Number(cost([{kwh:(plnEnergy*.8).toFixed(4),rate:tariff.lwbp},{kwh:(plnEnergy*.2).toFixed(4),rate:tariff.wbp}])??0);
+ const base=Number(cost([{kwh:(plnEnergy*.8).toFixed(4),rate:tariff.plnLwbp??tariff.lwbp},{kwh:(plnEnergy*.2).toFixed(4),rate:tariff.plnWbp??tariff.wbp}])??0);
  const dummyBill=Math.round((base+2500000)*1.03);
  const plnBill=bill?Number(bill.amount):dummyBill;
  const gap=machineCost===null?null:plnBill-machineCost;
@@ -29,5 +29,5 @@ export function calculateCostGap(month:string,tariff:GapTariff,bill?:PlnBill,tic
 }
 export function buildCostGapReport(month:string,tariff:GapTariff,bill?:PlnBill,tick=simulationSnapshot().tick):Report{
  const g=calculateCostGap(month,tariff,bill,tick);
- return {title:'SIMULASI — Selisih biaya mesin dan PLN',metadata:[['Periode',month],['Cakupan','Seluruh titik ukur eksklusif; bukan mesin terpilih saja'],['Batas perbandingan WIB',timeWib(new Date(g.endAt).toISOString())],['Tagihan PLN',g.manual?'Input lokal pengguna untuk rentang yang sama':'Dummy otomatis, bukan tagihan PLN nyata'],['Kelengkapan',`${g.available}/${meters.length} titik ukur`],['Tarif mesin',`Internal v${tariff.version}: Rp${tariff.accounting}/kWh`],['Rumus','Gap = tagihan PLN − biaya mesin; persen = gap / tagihan PLN × 100'],['Asumsi dummy','Energi PLN 104% model mesin; LWBP/WBP 80/20; biaya tetap Rp2.500.000 dan tambahan 3%. Bukan aturan tarif PLN.'],['Batas makna','Selisih biaya bukan ukuran susut energi atau kerugian listrik']],headers:['Biaya mesin (Rp)','Tagihan PLN (Rp)','Gap PLN − mesin (Rp)','Gap (%)','Status'],rows:[[g.machineCost,g.plnBill,g.gap,g.percent,g.complete?'Dapat dibandingkan pada data dummy':'BELUM LENGKAP / TIDAK SEWAKTU — gap tidak dihitung']]};
+ return {title:'SIMULASI — Selisih biaya mesin dan PLN',metadata:[['Periode',month],['Cakupan','Seluruh titik ukur eksklusif; bukan mesin terpilih saja'],['Batas perbandingan WIB',timeWib(new Date(g.endAt).toISOString())],['Tagihan PLN',g.manual?'Input lokal pengguna untuk rentang yang sama':'Dummy otomatis, bukan tagihan PLN nyata'],['Kelengkapan',`${g.available}/${meters.length} titik ukur`],['Tarif mesin',`Internal v${tariff.version}: Rp${tariff.accounting}/kWh`],['Tarif PLN simulasi',`LWBP Rp${tariff.plnLwbp??tariff.lwbp}/kWh; WBP Rp${tariff.plnWbp??tariff.wbp}/kWh`],['Rumus','Gap = tagihan PLN − biaya mesin; persen = gap / tagihan PLN × 100'],['Asumsi dummy','Energi PLN 104% model mesin; LWBP/WBP 80/20; biaya tetap Rp2.500.000 dan tambahan 3%. Bukan aturan tarif PLN.'],['Batas makna','Selisih biaya bukan ukuran susut energi atau kerugian listrik']],headers:['Biaya mesin (Rp)','Tagihan PLN (Rp)','Gap PLN − mesin (Rp)','Gap (%)','Status'],rows:[[g.machineCost,g.plnBill,g.gap,g.percent,g.complete?'Dapat dibandingkan pada data dummy':'BELUM LENGKAP / TIDAK SEWAKTU — gap tidak dihitung']]};
 }

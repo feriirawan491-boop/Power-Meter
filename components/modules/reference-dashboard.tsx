@@ -1,8 +1,6 @@
 'use client';
 import {useId,useState} from 'react';
-import {MeterExplorer} from './monitoring';
 import {PowerTriangle} from './power-triangle';
-import {meters} from '@/lib/data';
 import {useMeasurements,currentHistory} from '@/lib/measurements';
 import {timeWib} from '@/lib/domain';
 import {formatReading,type DummyFrame} from '@/lib/telemetry';
@@ -32,4 +30,4 @@ function Trend({kind,history}:{kind:'voltage'|'current';history:DummyFrame[]}){
 }
 function SnapshotReferenceDashboard({meterId}:{meterId:string}){const shared=useMeasurements();const source=shared.meters.find(m=>m.id===meterId)!;const frame=source.frame;const history=currentHistory(meterId,shared.tick);const readings=[...history].reverse().map(f=>({time:timeWib(f.at),voltage:f.vavg,current:f.iavg,power:f.kw,energy:f.counter}));const latest=readings[0];if(!source.connected)return <div className="card empty">Data meter terputus. Pengukuran tidak tersedia.</div>;return <section className="reference-dashboard" aria-label="Dashboard kelistrikan referensi"><p className="reference-source">{source.name} · {timeWib(frame.at)} WIB · Sumber dummy bersama · {shared.playing?'Pembaruan 10 detik':'Simulasi dijeda'}</p><div className="reference-metrics">{metrics.map(m=><article className="reference-card reference-metric" key={m.key}>{m.key==='current'?<Activity/>:<Zap/>}<div><h2>{m.label}</h2><small>Timestamp bersama</small></div><strong>{latest?formatReading(latest[m.key],m.digits):'—'} <span>{m.unit}</span></strong></article>)}</div><div className="reference-tables">{metrics.map(m=><ReadingTable key={m.key} metric={m} readings={readings}/>)}</div><div className="reference-phases">{[frame.v12,frame.v23,frame.v31].map((v,i)=><Gauge key={i} label={`V${i+1}`} value={Number(v.toFixed(2))} max={500} color={['#2196ff','#4caf50','#ff4949'][i]} unit="V"/>)}<Trend kind="voltage" history={history}/>{[frame.i1,frame.i2,frame.i3].map((v,i)=><Gauge key={i} label={`I${i+1}`} value={Number(v.toFixed(2))} max={Math.ceil(frame.iavg*1.3/50)*50} color={['#2196ff','#4caf50','#ff4949'][i]} unit="A"/>)}<Trend kind="current" history={history}/></div><PowerTriangle frame={frame}/><ReadingTable readings={readings}/></section>}
 
-export function ReferenceDashboard({meterId='PM-001',initialMode='snapshot'}:{meterId?:string;initialMode?:'dummy'|'snapshot'}){const [mode,setMode]=useState(initialMode);const meter=meters.find(m=>m.id===meterId)??meters[0];return <section><div className="module-toolbar"><label>Mode tampilan<select value={mode} onChange={e=>setMode(e.target.value as typeof mode)}><option value="dummy">Seluruh parameter · data bersama</option><option value="snapshot">Ringkasan mesin · data bersama</option></select></label></div>{mode==='snapshot'?<SnapshotReferenceDashboard meterId={meterId}/>:<MeterExplorer key={meter.id} meter={meter}/>}</section>}
+export function ReferenceDashboard({meterId='PM-001'}:{meterId?:string}){return <SnapshotReferenceDashboard meterId={meterId}/>;}
