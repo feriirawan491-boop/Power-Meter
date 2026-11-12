@@ -12,7 +12,7 @@ import {EnergyWorkspace,type EnergySelection} from '@/components/modules/energy'
 import {AlarmsWorkspace} from '@/components/modules/alarms';
 import {ReportsWorkspace} from '@/components/modules/reports';
 import {SettingsWorkspace} from '@/components/modules/settings';
-import {canAccess,timeWib,type Role} from '@/lib/domain';
+import {canAccess,timeWib} from '@/lib/domain';
 import {useDemo,storageWarning} from '@/lib/demo-store';
 import {company} from '@/constants/company';
 import {navigation,navigationLabels,navigationViews,routes,type View} from '@/constants/navigation';

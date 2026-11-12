@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {startTransition,useEffect,useState} from 'react';
 import {Plus,Save,RefreshCw} from 'lucide-react';
 import type {Role} from '@/lib/domain';
 import {roles} from '@/lib/domain';
@@ -9,8 +9,8 @@ const roleNames:Record<Role,string>={Admin:'Admin',Supervisor:'Supervisor',Opera
 export function UserAccessManager({canManage}:{canManage:boolean}){
  const [users,setUsers]=useState<User[]>([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
  const [email,setEmail]=useState(''),[displayName,setDisplayName]=useState(''),[role,setRole]=useState<Role>('Operator'),[password,setPassword]=useState('');
- async function load(){setBusy(true);try{const response=await fetch('/api/users',{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error??'Could not load users.');setUsers(data.users);setError('')}catch(e){setError(e instanceof Error?e.message:'Could not load users.')}finally{setBusy(false)}}
- useEffect(()=>{if(canManage)void load()},[canManage]);
+ async function load(){try{const response=await fetch('/api/users',{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error??'Could not load users.');startTransition(()=>{setUsers(data.users);setError('')})}catch(e){startTransition(()=>setError(e instanceof Error?e.message:'Could not load users.'))}finally{startTransition(()=>setBusy(false))}}
+ useEffect(()=>{if(canManage){startTransition(()=>setBusy(true));void load()}},[canManage]);
  async function create(event:React.FormEvent){event.preventDefault();setBusy(true);setError('');setMessage('');try{const response=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,displayName,role,password})});const data=await response.json();if(!response.ok)throw new Error(data.error??'Could not create account.');setUsers(current=>[...current,data.user].sort((a,b)=>a.email.localeCompare(b.email)));setEmail('');setDisplayName('');setPassword('');setMessage('Account created.')}catch(e){setError(e instanceof Error?e.message:'Could not create account.')}finally{setBusy(false)}}
  async function update(user:User,change:Partial<Pick<User,'role'|'active'>> & {password?:string}){setBusy(true);setError('');setMessage('');try{const response=await fetch(`/api/users/${encodeURIComponent(user.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(change)});const data=await response.json();if(!response.ok)throw new Error(data.error??'Could not update account.');setUsers(current=>current.map(item=>item.id===user.id?{...item,...data.user}:item));setMessage('Account updated.')}catch(e){setError(e instanceof Error?e.message:'Could not update account.')}finally{setBusy(false)}}
  if(!canManage)return <p>Only admins can manage user accounts.</p>;
