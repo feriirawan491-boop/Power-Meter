@@ -9,6 +9,6 @@ it('shows five timestamp readings in each table',()=>{
   expect(within(table).getAllByRole('row')).toHaveLength(6);
   expect(within(table).getAllByRole('cell').length).toBeGreaterThanOrEqual(10);
  }
- expect(screen.getAllByText('1–5 dari 36')).toHaveLength(5);
- expect(screen.getByRole('button',{name:'Halaman berikutnya Main'})).toBeEnabled();
+ expect(screen.getAllByText('1–5 of 36')).toHaveLength(5);
+ expect(screen.getByRole('button',{name:'Next page Main'})).toBeEnabled();
 });

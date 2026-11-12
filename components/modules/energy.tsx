@@ -22,7 +22,7 @@ export function EnergyWorkspace({role,initialTab='accounting',initialSelection}:
  const tariff=s.tariffs.find(t=>t.version===version)??s.tariffs.at(-1);
  if(!tariff)return <Notice>Sample rates are unavailable. Consumption and costs cannot be calculated.</Notice>;
  const raw=buildEnergyReport(month,meter,kind,tariff,sim.tick);
- const monthly=kind==='monthly',pln=kind==='pln',finalized=raw.metadata.find(([key])=>key==='Quality')?.[1]==='COMPLETE in simulation';const availableCount=raw.rows.filter(row=>typeof row[monthly?3:1]==='number').length;const complete=availableCount>0;const allAvailable=availableCount===raw.rows.length&&complete;const exampleRow=raw.rows.find(row=>typeof row[3]==='number');
+ const monthly=kind==='monthly',pln=kind==='pln',finalized=raw.metadata.find(([key])=>key==='Mutu')?.[1]==='LENGKAP pada simulasi';const availableCount=raw.rows.filter(row=>typeof row[monthly?3:1]==='number').length;const complete=availableCount>0;const allAvailable=availableCount===raw.rows.length&&complete;const exampleRow=raw.rows.find(row=>typeof row[3]==='number');
  const period=new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'Asia/Jakarta'}).format(new Date(month+'-01T00:00:00+07:00'))+(finalized?'':' · in progress');
  const scope=meter==='all'?'All sample metering points':meters.find(m=>m.id===meter)?.name??meter;
  const selectedCount=raw.rows.length;

@@ -55,25 +55,25 @@ it('late samples expire consistently in monitoring, history, energy, and the PLN
 
 it('new tariffs update unpinned energy and reports while an explicit old version remains unchanged',async()=>{
  render(<><EnergyWorkspace role="Supervisor"/><ReportsWorkspace/><SettingsWorkspace role="Admin"/></>);
- await userEvent.click(screen.getByRole('tab',{name:'Tarif'}));
- for(const [label,value] of [['Tarif Akunting (Rp/kWh)','2000'],['Tarif PLN LWBP (Rp/kWh)','2300'],['Tarif PLN WBP (Rp/kWh)','3400']]){
+ await userEvent.click(screen.getByRole('tab',{name:'Rates'}));
+ for(const [label,value] of [['Accounting rate (Rp/kWh)','2000'],['PLN LWBP rate (Rp/kWh)','2300'],['PLN WBP rate (Rp/kWh)','3400']]){
   await userEvent.clear(screen.getByLabelText(label));
   await userEvent.type(screen.getByLabelText(label),value);
  }
- await userEvent.type(screen.getByLabelText('Alasan perubahan'),'Integration tariff scenario');
- await userEvent.click(screen.getByRole('button',{name:'Simpan versi tarif'}));
- expect(screen.getByLabelText('Tarif yang digunakan')).toHaveValue('2');
- const pln=within(screen.getByRole('region',{name:'Perhitungan PLN'}));
- expect(pln.getByText('Rp2.300/kWh')).toBeVisible();
- expect(pln.getByText('Rp3.400/kWh')).toBeVisible();
- await userEvent.selectOptions(screen.getByLabelText('Jenis laporan'),'accounting');
- await userEvent.click(screen.getByRole('button',{name:'Terapkan filter laporan'}));
- const preview=screen.getByRole('heading',{name:'Laporan & cetak manual'}).closest('section')!;
+ await userEvent.type(screen.getByLabelText('Reason for change'),'Integration tariff scenario');
+ await userEvent.click(screen.getByRole('button',{name:'Save rate version'}));
+ expect(screen.getByLabelText('Rate used')).toHaveValue('2');
+ const pln=within(screen.getByRole('region',{name:'PLN calculation'}));
+ expect(pln.getByText('Rp2,300/kWh')).toBeVisible();
+ expect(pln.getByText('Rp3,400/kWh')).toBeVisible();
+ await userEvent.selectOptions(screen.getByLabelText('Report type'),'accounting');
+ await userEvent.click(screen.getByRole('button',{name:'Apply report filters'}));
+ const preview=screen.getByRole('heading',{name:'Reports & manual printing'}).closest('section')!;
  expect(within(preview).getByRole('columnheader',{name:'Tarif internal (Rp/kWh)'})).toBeVisible();
- expect(within(preview).getAllByRole('cell',{name:'2.000'})).toHaveLength(5);
- await userEvent.selectOptions(screen.getByLabelText('Tarif yang digunakan'),'1');
+ expect(within(preview).getAllByRole('cell',{name:'2,000'})).toHaveLength(5);
+ await userEvent.selectOptions(screen.getByLabelText('Report rate version'),'1');
  act(()=>saveTariff({...rates,accounting:'3000',effectiveFrom:'2027-01-01'},'Another tariff scenario','Admin'));
- expect(screen.getByLabelText('Tarif yang digunakan')).toHaveValue('1');
+ expect(screen.getByLabelText('Report rate version')).toHaveValue('1');
 });
 
 it('published reports keep both PLN tariffs and never change when settings change',()=>{
