@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {beforeAll,beforeEach,afterAll,afterEach,it,expect,vi} from 'vitest';
 import {NextRequest} from 'next/server';
 import {randomUUID} from 'node:crypto';
