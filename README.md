@@ -32,7 +32,7 @@ prioritas integrasi produksi setelah audit 10 November 2026.
 
 Monitoring/detail/histori, dua dashboard biaya, rekap bulanan, alarm/ack/catatan/replay, export CSV/XLSX/cetak, settings versi tarif/rule, peran UI dan audit lokal.
 
-Data/persistence memakai localStorage, bukan backend pabrik. Login demo memakai sesi cookie bertanda tangan di server; belum ada RBAC produksi, PM5330/ThingsBoard, tarif atau alarm produksi. Jangan memasukkan data sensitif. Label Supervisor/Operator/Akunting/Admin adalah simulasi persona, bukan akun terotorisasi.
+Data simulasi operasional tetap memakai localStorage. Akun login dan role disimpan di database SQLite lokal; halaman dan API user membaca role dari sesi server. Pembacaan pabrik, PM5330/ThingsBoard, tarif atau alarm produksi belum terhubung. Jangan memasukkan data sensitif produksi.
 
 Tarif uji bukan tarif Sakuratex/PLN. Semua fungsi cloud publication, actual billing dan klaim gangguan berada di luar kemampuan sandbox ini. Gate produksi, UAT pengguna dan integrasi yang belum selesai dicatat eksplisit dalam status implementasi.
 
@@ -46,8 +46,10 @@ Perbandingan biaya mesin–PLN tersedia di Ringkasan Perhitungan dan Laporan. Ga
 
 Skenario awal menyediakan data dummy online untuk seluruh 5 mesin, termasuk Dyeing & Finishing (beban nominal 125 kW), sehingga perbandingan biaya mesin–PLN langsung dapat dihitung. Skenario terlambat/terputus tetap dapat dipilih melalui detail meter dan berlaku serentak lintas menu.
 
-## Login demo
+## User accounts
 
-Buka `/login`. Akun: `demo@sakuratex.id`, kata sandi: `demo123`. Kredensial diverifikasi pada route server; halaman dashboard memerlukan cookie sesi HttpOnly yang berlaku 8 jam. Tombol keluar menghapus sesi. Pemilih peran tetap simulasi persona.
+`npm run dev` and `npm run build` initialize a local SQLite database at `.data/users.sqlite` and create one account for each role if it does not exist. The four initial accounts use password `Demo123`. Their email, role, and password are listed in `.generated/initial-user-credentials.json` with owner-only file permissions. Keep that file private; both local directories are excluded from Git.
 
-Login demo otomatis menyiapkan kunci sesi acak di sisi server saat `npm ci`/build. Tidak perlu mengisi environment untuk menjalankan demo. File `.generated/` diabaikan Git dan tidak masuk aset browser. `DEMO_SESSION_SECRET` tetap dapat diisi untuk memakai kunci yang stabil antar deployment; jangan commit nilai secret ke Git. Ilustrasi hero memakai gambar pabrik tekstil yang diberikan pengguna.
+Initial email addresses are `admin@sakuratex.id`, `supervisor@sakuratex.id`, `operator@sakuratex.id`, and `accounting@sakuratex.id`. The Admin account can create users, change roles, disable accounts, and reset passwords from Settings → User access. Passwords are salted scrypt hashes. Accounts can sign in at `/login`; their role is read from the database and cannot be changed from the browser UI.
+
+SQLite uses Node's built-in `node:sqlite`; use Node.js 22.13 or newer. Set `AUTH_DATABASE_PATH` to place the database on a persistent volume. The included SQLite setup is for a single persistent Node host and is not suitable for ephemeral serverless filesystems or multi-instance deployments without shared database storage. `DEMO_SESSION_SECRET` can be set to a stable, private session signing secret; do not commit secrets.

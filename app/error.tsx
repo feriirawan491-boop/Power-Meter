@@ -1,2 +1,2 @@
 'use client';
-export default function ErrorPage({reset}:{reset:()=>void}){return <main className="card placeholder"><h1>Tampilan gagal dimuat</h1><p>Coba muat ulang. Data simulasi bukan pembacaan produksi.</p><button className="button primary" onClick={reset}>Coba lagi</button></main>}
+export default function ErrorPage({reset}:{reset:()=>void}){return <main className="card placeholder"><h1>Page failed to load</h1><p>Please try again. Simulated data is not a production reading.</p><button className="button primary" onClick={reset}>Try again</button></main>}

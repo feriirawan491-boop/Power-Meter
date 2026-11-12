@@ -2,7 +2,7 @@
 
 Tanggal serah terima teknis: **10 November 2026**  
 Versi aplikasi: **0.7.0**  
-Status: **sandbox frontend dengan data simulasi dan login demo**  
+Status: **sandbox lokal dengan data simulasi dan database akun SQLite**
 Penerima: pengembang lanjutan, QA, dan tim integrasi perangkat.
 
 Dokumen ini menjelaskan kondisi kode setelah audit integrasi terakhir. Ini bukan
@@ -24,14 +24,12 @@ demo disimpan di browser.
 | Alarm | Over voltage, under voltage, overload, dan low PF; replay, pengakuan, catatan, dan pemulihan berbasis sampel simulasi. |
 | Laporan | Pratinjau, CSV, Excel, dan cetak memakai data laporan yang sama setelah filter diterapkan. |
 | Rekap terbit | Contoh penerbitan Oktober 2026 menyimpan snapshot nilai dan konfigurasi; penerbitan ulang periode yang sama diblokir. |
-| Login | Kredensial demo diverifikasi server; sesi bertanda tangan melalui cookie HttpOnly selama delapan jam. |
-| Integrasi produksi | Belum terhubung ke meter fisik, ThingsBoard, database pusat, atau akun pengguna produksi. |
+| Login dan akses | Akun dan role diverifikasi dari SQLite; sesi bertanda tangan melalui cookie HttpOnly selama delapan jam. Admin dapat membuat, mengubah role, menonaktifkan, dan reset password akun. |
+| Integrasi produksi | Database akun masih SQLite lokal; belum terhubung ke meter fisik, ThingsBoard, database pusat, atau direktori akun produksi. |
 
 ## 2. Menjalankan proyek
 
-Gunakan Node.js 22 agar selaras dengan workflow CI yang tersedia. Lingkungan
-verifikasi lokal terakhir menggunakan Node.js 24.13.1 dan npm 11.8.0; versi minimum
-Node yang dinyatakan paket Next.js terpasang adalah 20.9.0.
+Gunakan Node.js 22.13 atau lebih baru karena database akun memakai `node:sqlite`. Lingkungan lokal menggunakan Node.js 24.13.1.
 
 ```sh
 npm ci
@@ -41,13 +39,14 @@ npm run dev
 Buka **http://127.0.0.1:5173/**. Script menjalankan Next.js dengan webpack pada
 host dan port tersebut.
 
-Login demo:
-
-- Email: `demo@sakuratex.id`
-- Kata sandi: `demo123`
-
-Kredensial ini adalah akun contoh bersama yang tertulis di source, bukan akun
-operasional. Pemilih Supervisor/Operator/Akunting/Admin adalah simulasi persona.
+Akun awal untuk Admin, Supervisor, Operator, dan Accounting dibuat otomatis saat
+`npm run dev` atau `npm run build`. Email tetapnya adalah `admin@sakuratex.id`,
+`supervisor@sakuratex.id`, `operator@sakuratex.id`, dan
+`accounting@sakuratex.id`. Password awal semua akun adalah `Demo123` dan tercantum di
+`.generated/initial-user-credentials.json`; simpan file ini secara privat. File akun
+memiliki permission pemilik saja dan folder `.generated/` diabaikan Git. Admin dapat
+mengelola akun di Settings → User access. Database tersimpan di `.data/users.sqlite`;
+`AUTH_DATABASE_PATH` dapat menunjuk ke volume persisten.
 
 Untuk menjalankan hasil build lokal:
 
@@ -57,8 +56,8 @@ npm start
 ```
 
 `npm ci`, `npm run dev`, dan `npm run build` memiliki lifecycle script yang
-menyiapkan `.generated/demo-session-key.json`. File ini diabaikan Git. Tidak perlu
-mengisi environment untuk demo lokal. `DEMO_SESSION_SECRET` dapat disediakan pada
+menyiapkan kunci sesi dan akun awal jika belum ada. File lokal di `.generated/`
+dan database `.data/` diabaikan Git. `DEMO_SESSION_SECRET` dapat disediakan pada
 environment server untuk menstabilkan kunci sesi; nilainya tidak disertakan dalam
 handoff atau disimpan ke Git.
 
@@ -178,11 +177,12 @@ otomatis pemakaian lintas versi tarif di tengah bulan.
 
 | Penyimpanan | Isi dan masa berlaku |
 | --- | --- |
-| localStorage `sakuratex-demo-v1` | Persona, event/catatan/pengakuan, versi tarif, aturan, audit, tagihan PLN, dan snapshot rekap. |
+| localStorage `sakuratex-demo-v1` | Event/catatan/pengakuan, versi tarif, aturan, audit simulasi, tagihan PLN, dan snapshot rekap. |
 | localStorage `sakuratex-sidebar-collapsed` | Preferensi sidebar. |
 | localStorage `sakuratex-review` | Catatan review yang tidak dikirim ke tim. |
 | State memori | Clock/jeda, koneksi, dan timeline replay pada sesi aplikasi. |
-| Cookie `sakuratex-demo-session` | Sesi login demo bertanda tangan; HttpOnly, SameSite Lax, kedaluwarsa delapan jam. |
+| SQLite `.data/users.sqlite` | Akun, role, status aktif, dan password hash scrypt. Lokasi dapat diatur dengan `AUTH_DATABASE_PATH`. |
+| Cookie `sakuratex-demo-session` | Sesi akun bertanda tangan; HttpOnly, SameSite Lax, kedaluwarsa delapan jam. |
 
 Validasi state memakai Zod. Tarif lama tanpa field PLN memakai fallback LWBP/WBP
 versi tersebut. Field LWBP/WBP internal lama masih dipertahankan pada data untuk

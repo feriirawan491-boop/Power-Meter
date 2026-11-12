@@ -11,6 +11,7 @@
 
 # Generated builds and framework state
 /.generated/
+/.data/
 /dist/
 /.next/
 /.vinext/

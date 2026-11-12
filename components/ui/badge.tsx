@@ -1,1 +1,1 @@
-export function Badge({text}:{text:string}){return <span className={`badge ${text==='Peringatan'?'warning':text.includes('dinilai')||text==='Terputus'?'unknown':'success'}`}><span className="dot"/>{text}</span>}
+export function Badge({text}:{text:string}){return <span className={`badge ${text==='Warning'?'warning':text.includes('assessed')||text==='Disconnected'?'unknown':'success'}`}><span className="dot"/>{text}</span>}

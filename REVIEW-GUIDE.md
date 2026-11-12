@@ -15,7 +15,7 @@ Saran review: catat halaman, langkah, hasil yang diharapkan, hasil aktual dan sc
 
 ## Review parameter lengkap dengan dummy
 
-1. Ringkasan Pabrik → pilih mesin → Mode tampilan “Dummy realtime”. Alternatif: Panel & Meter → Detail.
+1. Dashboard → pilih mesin → Mode tampilan “Dummy realtime”. Alternatif: Panel & Meter → Detail.
 2. Tab Kelistrikan: periksa VLL/VLN, arus fasa/netral, tiga jenis daya, PF, Hz dan E-Total. Pembaruan berjalan otomatis 10 detik.
 3. Klik “Jeda data dummy”, lalu “Sampel berikutnya (+10 detik)” untuk membandingkan angka tanpa menunggu timer.
 4. Tab Sinkronisasi E-Total: nilai display simulasi dan aplikasi harus sama pada timestamp yang sama; selisih 0.

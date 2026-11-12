@@ -7,9 +7,9 @@ untuk alur data dan hasil validasi terbaru. Catatan fase di bawah adalah riwayat
 implementasi; perubahan setelahnya dijelaskan dalam audit tersebut. Status tetap
 simulasi lokal, belum terhubung ke perangkat atau database produksi.
 
-## Login demo
+## Akun pengguna
 
-Halaman `/login` menggunakan akun `demo@sakuratex.id` / `demo123`, pemeriksaan server dan sesi cookie HttpOnly 8 jam. Dashboard dilindungi Proxy; logout menghapus sesi. Ini akses demo bersama, bukan otorisasi per pengguna/area produksi.
+Pembaruan 12 November 2026: halaman `/login` memverifikasi akun dari SQLite lokal `.data/users.sqlite`; kata sandi disimpan sebagai scrypt hash dan sesi cookie HttpOnly berlaku 8 jam. Akun awal Admin, Supervisor, Operator, dan Accounting dibuat otomatis. Password awal semua role adalah `Demo123`; email dan password tercantum di `.generated/initial-user-credentials.json`. Admin mengelola akun di Settings → User access. Database ini untuk satu host Node persisten; belum terhubung ke direktori akun atau database produksi.
 
 ## URL review
 

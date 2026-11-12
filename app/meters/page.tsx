@@ -1,2 +1,2 @@
-import {Dashboard} from '@/components/dashboard';
-export default function Page(){return <Dashboard key="meters" initialView="Panel & Meter"/>}
+import {AuthenticatedDashboard} from '@/components/authenticated-dashboard';
+export default function Page(){return <AuthenticatedDashboard pageKey="meters" initialView="Panel & Meter"/>}
